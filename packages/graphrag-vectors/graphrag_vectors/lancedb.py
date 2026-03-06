@@ -71,9 +71,12 @@ class LanceDBVectorStore(VectorStore):
         )
 
         # Create index now that schema exists
-        self.document_collection.create_index(
-            vector_column_name=self.vector_field, index_type="IVF_FLAT"
-        )
+        try:
+            self.document_collection.create_index(
+                vector_column_name=self.vector_field
+            )
+        except Exception as e:
+            print(f"Skipping index creation: {e}")
 
         # Remove the dummy document used to set up the schema
         self.document_collection.delete(f"{self.id_field} = '__DUMMY__'")
