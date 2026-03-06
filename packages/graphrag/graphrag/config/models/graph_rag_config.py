@@ -265,6 +265,8 @@ class GraphRagConfig(BaseModel):
                     index_name=embedding,
                     vector_size=default_vector_size,
                 )
+            else:
+                self.vector_store.index_schema[embedding].vector_size = default_vector_size
 
     def _validate_vector_store_db_uri(self) -> None:
         """Validate the vector store configuration."""
