@@ -102,7 +102,7 @@ class LLMCompletionResponse(ChatCompletion, Generic[ResponseFormat]):
 
 
 class LLMCompletionArgs(
-    TypedDict, Generic[ResponseFormat], total=False, extra_items=Any
+    TypedDict, Generic[ResponseFormat], total=False
 ):
     """Arguments for LLMCompletionFunction.
 
@@ -198,7 +198,7 @@ class LLMEmbeddingResponse(CreateEmbeddingResponse):
         return self.embeddings[0] if self.embeddings else []
 
 
-class LLMEmbeddingArgs(TypedDict, total=False, extra_items=Any):
+class LLMEmbeddingArgs(TypedDict, total=False):
     """Arguments for embedding functions.
 
     Same signature as litellm.embedding but without the `model` parameter
