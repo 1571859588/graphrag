@@ -183,6 +183,8 @@ def _create_base_embeddings(
 
     def _base_embedding(**kwargs: Any) -> LLMEmbeddingResponse:
         kwargs.pop("metrics", None)  # Remove metrics if present
+        if kwargs.get("encoding_format") is None:
+            kwargs.pop("encoding_format", None)
         new_args: dict[str, Any] = {**base_args, **kwargs}
 
         response = litellm.embedding(**new_args)
@@ -190,6 +192,8 @@ def _create_base_embeddings(
 
     async def _base_embedding_async(**kwargs: Any) -> LLMEmbeddingResponse:
         kwargs.pop("metrics", None)  # Remove metrics if present
+        if kwargs.get("encoding_format") is None:
+            kwargs.pop("encoding_format", None)
         new_args: dict[str, Any] = {**base_args, **kwargs}
 
         response = await litellm.aembedding(**new_args)
