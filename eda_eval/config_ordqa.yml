@@ -1,0 +1,81 @@
+# =============================================================================
+# GraphRAG EDA 场景配置（ORD-QA 评估专用）
+# 用法：ingest_ordqa.py 和 evaluate_ordqa.py 会读取本文件，覆盖工作空间默认参数。
+# =============================================================================
+
+# ── LLM（索引 + 查询共用，可分别覆盖） ────────────────────────────────────────
+llm:
+  api_key: ${GRAPHRAG_API_KEY}                   # 从环境变量读取
+  api_base: ${GRAPHRAG_API_BASE:https://api.openai.com/v1}
+  model: gpt-4o-mini                             # 索引阶段（平衡速度/成本）
+  model_supports_json: true
+  max_tokens: 4096
+  temperature: 0.0
+  request_timeout: 180.0
+  max_retries: 5
+  concurrent_requests: 4                         # 并发数，视 rate limit 调整
+
+# ── 查询阶段 LLM（可以换成更强的模型） ────────────────────────────────────────
+query_llm:
+  model: gpt-4o                                  # 查询推理阶段推荐更强模型
+  temperature: 0.0
+  max_tokens: 2048
+
+# ── 嵌入模型 ──────────────────────────────────────────────────────────────────
+embeddings:
+  llm:
+    api_key: ${GRAPHRAG_API_KEY}
+    api_base: ${GRAPHRAG_API_BASE:https://api.openai.com/v1}
+    model: text-embedding-3-small
+    max_retries: 5
+
+# ── 文档切块 ──────────────────────────────────────────────────────────────────
+chunks:
+  size: 600          # 每块 token 数（OpenROAD 文档段落普遍较短，适当缩小）
+  overlap: 100
+  group_by_columns: [id]   # 按 ORD-QA 文档 chunk ID 分组，避免跨文档合并
+
+# ── 实体抽取 ──────────────────────────────────────────────────────────────────
+entity_extraction:
+  max_gleanings: 1          # 减少 gleaning 次数以控制成本；精度优先可改为 2
+  entity_types:
+    - EDA_tool               # EDA 工具（如 OpenROAD、Yosys）
+    - EDA_command            # Tcl / Shell 命令
+    - EDA_stage              # 设计阶段（floorplan、placement、routing …）
+    - EDA_parameter          # 命令参数 / 选项
+    - EDA_concept            # 术语概念（slack、parasitics、timing）
+    - EDA_file_format        # 文件格式（DEF、LEF、GDSII、Liberty …）
+
+# ── 社区检测（Leiden 算法） ────────────────────────────────────────────────────
+cluster_graph:
+  max_cluster_size: 8        # 每社区最大节点数；EDA 文档较密集，此值不宜过大
+
+# ── 社区摘要 ──────────────────────────────────────────────────────────────────
+summarize_descriptions:
+  max_length: 512
+
+community_reports:
+  max_length: 2048
+  max_input_length: 8192
+
+# ── 本地搜索（local query）参数 ───────────────────────────────────────────────
+local_search:
+  text_unit_prop: 0.5
+  community_prop: 0.1
+  conversation_history_max_turns: 3
+  top_k_entities: 10
+  top_k_relationships: 10
+  max_tokens: 12000
+
+# ── 全局搜索（global query）参数 ─────────────────────────────────────────────
+global_search:
+  max_tokens: 12000
+  data_max_tokens: 12000
+  map_max_tokens: 1000
+  reduce_max_tokens: 2000
+  concurrency: 4
+
+# ── 输出 ──────────────────────────────────────────────────────────────────────
+storage:
+  type: file
+  base_dir: output           # 相对于 workspace 根目录

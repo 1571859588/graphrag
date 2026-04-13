@@ -1,0 +1,6 @@
+rouge-score>=0.1.2
+bert-score>=0.3.13
+nltk>=3.8.1
+pyyaml>=6.0
+tqdm>=4.66.0
+python-dotenv>=1.0.0
