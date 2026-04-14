@@ -25,19 +25,27 @@ from pathlib import Path
 # ── 辅助函数 ──────────────────────────────────────────────────────────────────
 
 def load_documentation(doc_json: str) -> list[dict]:
-    """读取 openroad_documentation.json，返回 chunk 列表。
+    """读取 openroad_documentation.json，返回展平后的 chunk 列表。
 
-    支持两种格式：
-      - 列表格式：[{"id": "...", "content": "..."}, ...]
-      - 字典格式：{"id": "content", ...}
+    ORD-QA 标准格式：[{source, amount, knowledge: [{id, content, summary}]}]
+    展平后每个 chunk：{"id": str, "content": str}
     """
     with open(doc_json, encoding="utf-8") as f:
         raw = json.load(f)
 
+    if isinstance(raw, list) and raw and "knowledge" in raw[0]:
+        # ORD-QA 嵌套格式：source → knowledge[]
+        chunks = []
+        for source_obj in raw:
+            for k in source_obj.get("knowledge", []):
+                chunks.append({
+                    "id": k.get("id", ""),
+                    "content": k.get("content", ""),
+                })
+        return chunks
     if isinstance(raw, list):
         return raw
     if isinstance(raw, dict):
-        # 兼容 key→value 结构
         return [{"id": k, "content": v} for k, v in raw.items()]
     msg = f"Unexpected format in {doc_json}"
     raise ValueError(msg)
